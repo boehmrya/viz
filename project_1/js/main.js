@@ -17,6 +17,25 @@ var g = d3.select("#chart-area").append("svg")
         + margin.top + ")");
 
 
+var xAxisGroup = g.append("g")
+  .attr("class", "x axis")
+  .attr("transform", "translate(0, " + height + ")");
+
+
+var yAxisGroup = g.append("g")
+  .attr("class", "y-axis");
+
+
+// X Scale
+var x = d3.scaleBand()
+  .range([0,width])
+  .padding(0.2);
+
+// Y Scale
+var y = d3.scaleLinear()
+  .range([height,0]);
+
+
 // X Label
 g.append("text")
   .attr("class", "x axis-label")
@@ -39,72 +58,58 @@ g.append("text")
 
 // load revenue data
 d3.json("data/revenues.json").then(function(data) {
-  console.log(data);
 
   // convert revenue data to integers
   data.forEach(function(d) {
     d.revenue = parseFloat(d.revenue);
   });
 
-  // X Scale
-  var x = d3.scaleBand()
-    .domain(data.map( function(d) {
-      return d.month;
-    }))
-    .range([0,width])
-    .paddingInner(0.3)
-    .paddingOuter(0.3);
+  d3.interval( function() {
+    update(data);
+  }, 1000);
 
-
-  // Y Scale
-  var y = d3.scaleLinear()
-    .domain([0, d3.max(data, function(d) {
-      return d.revenue;
-    })])
-    .range([height,0]);
-
-
-  // X Axis
-  var xAxisCall = d3.axisBottom(x);
-  g.append("g")
-    .attr("class", "x axis")
-    .attr("transform", "translate(0, " + height + ")")
-    .call(xAxisCall)
-    .selectAll("text")
-      .attr("y", "15")
-      .attr("text-anchor", "middle");
-
-
-  // Y Axis
-  var yAxisCall = d3.axisLeft(y)
-    .ticks(10)
-    .tickFormat( function(d) {
-      return "$" + d;
-    });
-  g.append("g")
-    .attr("class", "y-axis")
-    .call(yAxisCall);
-
-
-  // Build rectangles
-  var rects = g.selectAll("rect")
-    .data(data)
-    .enter()
-    .append("rect")
-    .attr("y", function(d) {
-      return y(d.revenue);
-    })
-    .attr("x", function(d) {
-      return x(d.month);
-    })
-    .attr("width", x.bandwidth)
-    .attr("height", function(d) {
-      return height - y(d.revenue);
-    })
-    .attr("fill", function(d) {
-      return "grey";
-    });
+  // run the vis for the first time
+  update(data);
 
 }).catch(function(error) {
   console.log(error);
 })
+
+
+function update(data) {
+  // update domains
+  x.domain(data.map( function(d) { return d.month; }));
+  y.domain([0, d3.max(data, function(d) { return d.revenue; })]);
+
+  // X Axis
+  var xAxisCall = d3.axisBottom(x);
+  xAxisGroup.call(xAxisCall);
+
+  // Y Axis
+  var yAxisCall = d3.axisLeft(y)
+    .tickFormat( function(d) { return "$" + d; });
+  yAxisGroup.call(yAxisCall);
+
+  // JOIN new data with old elements
+  var rects = g.selectAll("rect")
+    .data(data);
+
+  // EXIT old elements not present in new data.
+  rects.exit().remove();
+
+  // UPDATE old elements present in new data.
+  rects
+    .attr("y", function(d) { return y(d.revenue); })
+    .attr("x", function(d) { return x(d.month); })
+    .attr("height", function(d) { return height - y(d.revenue); })
+    .attr("width", x.bandwidth);
+
+  // ENTER new elements present in new data.
+  rects.enter()
+    .append("rect")
+      .attr("y", function(d) { return y(d.revenue); })
+      .attr("x", function(d) { return x(d.month); })
+      .attr("height", function(d) { return height - y(d.revenue); })
+      .attr("width", x.bandwidth)
+      .attr("fill", "grey");
+}
