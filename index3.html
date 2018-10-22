@@ -1,66 +1,105 @@
 <!DOCTYPE html>
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
-<style type="text/css">
-  #line{
-    width: 700px;
-    margin: 20px 0;
-    height: 300px;
-    background: #eee;
-  }
-  button {
-    margin: 20px 0 0 20px;
-  }
-​</style>
-</head>
+<meta charset="utf-8">
+<style> /* set the CSS */
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1px;
+}
+
+</style>
 <body>
-  <div id="line"></div>​
-  <script type="text/javascript" src="http://mbostock.github.com/d3/d3.js?2.5.0"></script>
-  <script type="text/javascript">
-    var w = 700;
-    var h = 300;
 
-    var svg = d3.select("#line")
-    .append("svg")
-      .attr("width", w)
-      .attr("height", h)
-      .attr("id", "visualization")
-      .attr("xmlns", "http://www.w3.org/2000/svg");
+<!-- load the d3.js library -->
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script>
 
-    var data = d3.range(11).map(function(){return Math.random()*10})
-    var x = d3.scale.linear().domain([0, 10]).range([0, 700]);
-    var y = d3.scale.linear().domain([0, 10]).range([10, 290]);
-    var line = d3.svg.line()
-      .interpolate("linear")
-      .x(function(d,i) {return x(i);})
-      .y(function(d) {return y(d);})
+// set the dimensions and margins of the graph
+var margin = {top: 20, right: 20, bottom: 30, left: 50},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
 
-    var path = svg.append("path")
-      .attr("d", line(data))
-      .attr("stroke", "steelblue")
-      .attr("stroke-width", "2")
-      .attr("fill", "none");
+// parse the date / time
+var parseTime = d3.timeParse("%Y");
 
-    var totalLength = path.node().getTotalLength();
+// set the ranges
+var x = d3.scaleTime().range([0, width]);
+var y = d3.scaleLinear().range([height, 0]);
 
-    path.attr("stroke-dasharray", totalLength + " " + totalLength)
-      .attr("stroke-dashoffset", totalLength)
-      .transition()
-        .duration(2000)
-        .ease("linear")
-        .attr("stroke-dashoffset", 0);
+// define the line
+var valueline = d3.line()
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.close); });
 
-    svg.on("click", function(){
-      path
+// append the svg obgect to the body of the page
+// appends a 'group' element to 'svg'
+// moves the 'group' element to the top left margin
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+// Get the data
+d3.csv("data.csv", function(error, data) {
+  if (error) throw error;
+
+  // format the data
+  data.forEach(function(d) {
+      d.date = parseTime(d.date);
+      d.close = +d.close;
+  });
+
+  // Scale the range of the data
+  x.domain(d3.extent(data, function(d) { return d.date; }));
+  y.domain([0, d3.max(data, function(d) { return d.close; })]);
+
+  // Add the valueline path.
+  svg.append("path")
+      .data([data])
+      .attr("class", "line")
+      .attr("d", valueline);
+
+  // Add the X Axis
+  svg.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x));
+
+  // Add the Y Axis
+  svg.append("g")
+      .call(d3.axisLeft(y));
+
+  //Initially set the lines to not show
+  d3.selectAll(".line").style("opacity","0");
+
+  //Draw single line onload
+  animatelines();
+
+});
+
+
+function animatelines() {
+    // add opacity to all lines
+    d3.selectAll(".line").style("opacity","0.5");
+
+    //Select All of the lines and process them one by one
+    d3.selectAll(".line").each(function(d,i){
+
+    // Get the length of each line in turn
+    var totalLength = d3.select("#line" + i).node().getTotalLength();
+
+      d3.selectAll("#line" + i).attr("stroke-dasharray", totalLength + " " + totalLength)
+        .attr("stroke-dashoffset", totalLength)
         .transition()
         .duration(2000)
-        .ease("linear")
-        .attr("stroke-dashoffset", totalLength);
+        .delay(100*i)
+        .ease("linear") //Try linear, quad, bounce... see other examples here - http://bl.ocks.org/hunzy/9929724
+        .attr("stroke-dashoffset", 0)
+        .style("stroke-width",3)
     })
+}
 
-
-
-  </script>
+</script>
 </body>
-</html>

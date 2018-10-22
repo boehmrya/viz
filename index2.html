@@ -28,22 +28,28 @@ a {
   fill:none;
 }
 
+#chart {
+  width: 80%;
+  margin: 0 auto;
+}
+
 .x.axis path {
   display: inline;
 }
 
+/*
 .y.axis path {
   display: none;
 }
+*/
 
-
-
+/*
 .axis.y .tick line 		{
 stroke-width:1px;
 stroke:#ccc;
 stroke-opacity:1;
 }
-
+*/
 
 
 </style>
@@ -65,15 +71,15 @@ document.addEventListener('DOMContentLoaded', function(){
 		function makeChart() {
 
 			// Load in the data now...
-			d3.csv("old_data.csv", function(error, data) {
+			d3.csv("data.csv", function(error, data) {
 
   			//Get width of page
   			var chartwidth = parseInt(d3.select("#chart").style("width"));
 
   			// Set the margins
-  			var margin = {top: 20, right: 15, bottom: 30, left: 60},
+  			var margin = {top: 20, right: 60, bottom: 20, left: 60},
   				width = chartwidth - margin.left - margin.right,
-  				height = 430 - margin.top - margin.bottom;
+  				height = 630 - margin.top - margin.bottom;
 
   			// Set up the format to match that of the data that is being read in - have a look here for a list of formats - https://github.com/mbostock/d3/wiki/Time-Formatting
   			var parseDate = d3.time.format("%Y").parse;
@@ -95,10 +101,12 @@ document.addEventListener('DOMContentLoaded', function(){
   				.orient("bottom");
 
   			//Setting y-axis up here using y scaling object
+        /*
   			var yAxis = d3.svg.axis()
   				.scale(y)
   				.orient("left")
   				.tickSize(-width);
+          */
 
   			// Setting up a d3 line object - used to draw lines later
   			var line = d3.svg.line()
@@ -120,7 +128,6 @@ document.addEventListener('DOMContentLoaded', function(){
 
   			  // Take each row and put the date column through the parsedate form we've defined above.
   			  data.forEach(function(d) {
-                console.log(d);
   				      d.date = parseDate(d.date);
   			  });
 
@@ -135,6 +142,7 @@ document.addEventListener('DOMContentLoaded', function(){
     				};
   			  });
 
+
 			    // Set the domain of the x-value
 			    x.domain(d3.extent(data, function(d) { return d.date; }));
 
@@ -148,15 +156,22 @@ document.addEventListener('DOMContentLoaded', function(){
   			  svg.append("g")
   				  .attr("class", "x axis")
   				  .attr("transform", "translate(0," + height + ")")
-  				  .call(xAxis)
-  				.append("text")
+  				  .call(xAxis);
+
+          /*
+  				g.append("text")
   				  .attr("y", 40)
   				  .attr("x", width/2 ) //place the year label in the middle of the axis
   				  .attr("dx", ".71em")
   				  .style("text-anchor", "end")
   				  .text("Year");
+          */
+
+
+
 
   				// append the yAxis and add label as before.
+          /*
   			  svg.append("g")
   				  .attr("class", "y axis")
   				  .attr("id", "#yAxis")
@@ -166,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function(){
   				  .attr("x", -60)
   				  .attr("dy", ".71em")
   				  .style("text-anchor", "start")
-  				  .text("Population (Thousands)");
+  				  .text("Population (Thousands)");*/
 
   				//create proj
   				var proj = svg.selectAll(".proj")
@@ -185,13 +200,165 @@ document.addEventListener('DOMContentLoaded', function(){
   					  .attr("d", function(d,i) {
   						  return line(d.values);
   						 })
-  					  .style("stroke", function(d) { return "#666"; });
+  					  .style("stroke", function(d,i) {
+                if (i < 12) {
+                  return "#5ac8e7";
+                }
+                else if (i < 24) {
+                  return "#E71B4F";
+                }
+                else {
+                  return "#54284E";
+                }
+              });
 
 				   //Initially set the lines to not show
 				   d3.selectAll(".line").style("opacity","0");
 
 				   //Draw single line onload
 				   animatelines();
+
+           var barwidth = (chartwidth - 120) / 9;
+
+           // 2007: 16 mbps
+           svg.append("text")
+             .attr("y", height - 40)
+             .attr("x", 4)
+             .style("font-size", "32px")
+             .style("opacity", 0)
+             .text("16")
+             .transition()
+             .delay(1000)
+             .duration(3000)
+             .style("opacity", 1);
+
+           svg.append("text")
+             .attr("y", height - 20)
+             .attr("x", 0)
+             .style("font-size", "16px")
+             .style("opacity", 0)
+             .text("MBPS")
+             .transition()
+             .delay(1000)
+             .duration(3000)
+             .style("opacity", 1);
+
+           // 2009: 50 mbps
+           svg.append("text")
+             .attr("y", height - 50)
+             .attr("x", (barwidth * 2) - 20 + 4)
+             .style("font-size", "32px")
+             .style("opacity", 0)
+             .text("50")
+             .transition()
+             .delay(1000)
+             .duration(3000)
+             .style("opacity", 1);
+
+           svg.append("text")
+             .attr("y", height - 30)
+             .attr("x", (barwidth * 2) - 20)
+             .style("font-size", "16px")
+             .style("opacity", 0)
+             .text("MBPS")
+             .transition()
+             .delay(1000)
+             .duration(3000)
+             .style("opacity", 1);
+
+             // 2011: 100 mbps
+             svg.append("text")
+               .attr("y", height - 80)
+               .attr("x", (barwidth * 4) - 20 - 5)
+               .style("font-size", "32px")
+               .style("opacity", 0)
+               .text("100")
+               .transition()
+               .delay(1000)
+               .duration(3000)
+               .style("opacity", 1);
+
+             svg.append("text")
+               .attr("y", height - 60)
+               .attr("x", (barwidth * 4) - 20)
+               .style("font-size", "16px")
+               .style("opacity", 0)
+               .text("MBPS")
+               .transition()
+               .delay(1000)
+               .duration(3000)
+               .style("opacity", 1);
+
+               // 2012: 305 mbps
+               svg.append("text")
+                 .attr("y", height - 140)
+                 .attr("x", (barwidth * 5) - 20 - 5)
+                 .style("font-size", "32px")
+                 .style("opacity", 0)
+                 .text("305")
+                 .transition()
+                 .delay(1000)
+                 .duration(3000)
+                 .style("opacity", 1);
+
+               svg.append("text")
+                 .attr("y", height - 120)
+                 .attr("x", (barwidth * 5) - 20)
+                 .style("font-size", "16px")
+                 .style("opacity", 0)
+                 .text("MBPS")
+                 .transition()
+                 .delay(1000)
+                 .duration(3000)
+                 .style("opacity", 1);
+
+                 // 2013: 505 mbps
+                 svg.append("text")
+                   .attr("y", height - 200)
+                   .attr("x", (barwidth * 6) - 20 - 5)
+                   .style("font-size", "32px")
+                   .style("opacity", 0)
+                   .text("505")
+                   .transition()
+                   .delay(1000)
+                   .duration(3000)
+                   .style("opacity", 1);
+
+                 svg.append("text")
+                   .attr("y", height - 180)
+                   .attr("x", (barwidth * 6) - 20)
+                   .style("font-size", "16px")
+                   .style("opacity", 0)
+                   .text("MBPS")
+                   .transition()
+                   .delay(1000)
+                   .duration(3000)
+                   .style("opacity", 1);
+
+                 // 2015: 1 GB
+                 svg.append("text")
+                   .attr("y", height - 340)
+                   .attr("x", (barwidth * 8) - 80)
+                   .style("font-size", "32px")
+                   .style("opacity", 0)
+                   .text("1 GB")
+                   .transition()
+                   .delay(1000)
+                   .duration(3000)
+                   .style("opacity", 1);
+
+                 // 2016: 2 GB
+                 svg.append("text")
+                   .attr("y", 25)
+                   .attr("x", (barwidth * 9) - 100)
+                   .style("font-size", "32px")
+                   .style("opacity", 0)
+                   .text("2 GB")
+                   .transition()
+                   .delay(1000)
+                   .duration(3000)
+                   .style("opacity", 1);
+
 		   });
 
 		}
@@ -210,11 +377,11 @@ document.addEventListener('DOMContentLoaded', function(){
 					d3.selectAll("#line" + i).attr("stroke-dasharray", totalLength + " " + totalLength)
 					  .attr("stroke-dashoffset", totalLength)
 					  .transition()
-					  .duration(5000)
-					  .delay(100*i)
-					  .ease("bounce") //Try linear, quad, bounce... see other examples here - http://bl.ocks.org/hunzy/9929724
+					  .duration(3000)
+					  //.delay(100*i)
+					  .ease("linear") //Try linear, quad, bounce... see other examples here - http://bl.ocks.org/hunzy/9929724
 					  .attr("stroke-dashoffset", 0)
-					  .style("stroke-width",3)
+					  .style("stroke-width",1)
 				})
 	  }
 

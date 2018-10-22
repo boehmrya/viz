@@ -1,7 +1,7 @@
 /*
 *    main.js
 *    Mastering Data Visualization with D3.js
-*    Project 1 - Star Break Coffee
+*    Project 2 - Gapminder Clone
 */
 
 var margin = { left:100, right:10, top:10, bottom:150 };
@@ -31,12 +31,15 @@ var yAxisGroup = g.append("g")
 
 
 // X Scale
-var x = d3.scaleBand()
+var x = d3.scaleLog()
+	.domain([300, 150000])
   .range([0,width])
-  .padding(0.2);
+  .base(10);
+
 
 // Y Scale
 var y = d3.scaleLinear()
+	.domain([0, 90])
   .range([height,0]);
 
 
@@ -47,7 +50,7 @@ g.append("text")
   .attr("y", height + 80)
   .attr("font-size", "20px")
   .attr("text-anchor", "middle")
-  .text("Month");
+  .text("GDP Per Capita ($)");
 
 // Y Label
 var yLabel = g.append("text")
@@ -57,40 +60,21 @@ var yLabel = g.append("text")
   .attr("font-size", "20px")
   .attr("text-anchor", "middle")
   .attr("transform", "rotate(-90)")
-  .text("Revenue");
+  .text("Life Expectancy (Years)");
 
-
-// load revenue data
-d3.json("data/revenues.json").then(function(data) {
-
-  // convert revenue data to integers
-  data.forEach(function(d) {
-    d.revenue = parseFloat(d.revenue);
-    d.profit = parseFloat(d.profit);
-  });
+d3.json("data/data.json").then(function(data){
+	console.log(data);
 
   d3.interval( function() {
-    var newData = flag ? data : data.slice(1);
-
-    update(newData);
-    flag = !flag;
-  }, 1000);
+    update(data);
+  }, 100);
 
   // run the vis for the first time
   update(data);
-
-}).catch(function(error) {
-  console.log(error);
-})
+});
 
 
 function update(data) {
-  var value = flag ? "revenue" : "profit";
-
-  // update domains
-  x.domain(data.map( function(d) { return d.month; }));
-  y.domain([0, d3.max(data, function(d) { return d[value]; })]);
-
   // X Axis
   var xAxisCall = d3.axisBottom(x);
   xAxisGroup.transition(t).call(xAxisCall);
