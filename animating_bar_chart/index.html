@@ -37,19 +37,6 @@ a {
   display: inline;
 }
 
-/*
-.y.axis path {
-  display: none;
-}
-*/
-
-/*
-.axis.y .tick line 		{
-stroke-width:1px;
-stroke:#ccc;
-stroke-opacity:1;
-}
-*/
 
 
 </style>
@@ -100,14 +87,6 @@ document.addEventListener('DOMContentLoaded', function(){
   				.scale(x)
   				.orient("bottom");
 
-  			//Setting y-axis up here using y scaling object
-        /*
-  			var yAxis = d3.svg.axis()
-  				.scale(y)
-  				.orient("left")
-  				.tickSize(-width);
-          */
-
   			// Setting up a d3 line object - used to draw lines later
   			var line = d3.svg.line()
   				.x(function(d) { return x(d.date); })
@@ -142,7 +121,6 @@ document.addEventListener('DOMContentLoaded', function(){
     				};
   			  });
 
-
 			    // Set the domain of the x-value
 			    x.domain(d3.extent(data, function(d) { return d.date; }));
 
@@ -157,31 +135,6 @@ document.addEventListener('DOMContentLoaded', function(){
   				  .attr("class", "x axis")
   				  .attr("transform", "translate(0," + height + ")")
   				  .call(xAxis);
-
-          /*
-  				g.append("text")
-  				  .attr("y", 40)
-  				  .attr("x", width/2 ) //place the year label in the middle of the axis
-  				  .attr("dx", ".71em")
-  				  .style("text-anchor", "end")
-  				  .text("Year");
-          */
-
-
-
-
-  				// append the yAxis and add label as before.
-          /*
-  			  svg.append("g")
-  				  .attr("class", "y axis")
-  				  .attr("id", "#yAxis")
-  				  .call(yAxis)
-  				.append("text")
-  				  .attr("y", 0)
-  				  .attr("x", -60)
-  				  .attr("dy", ".71em")
-  				  .style("text-anchor", "start")
-  				  .text("Population (Thousands)");*/
 
   				//create proj
   				var proj = svg.selectAll(".proj")
