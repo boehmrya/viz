@@ -4,16 +4,16 @@
 *    Project 2 - Gapminder Clone
 */
 
-var margin = { left:100, right:100, top:100, bottom: 200 };
+var margin = { left:100, right:100, top:20, bottom: 100 };
 
-var width = 900 - margin.left - margin.right;
+var width = 1000 - margin.left - margin.right;
 var height = 600 - margin.top - margin.bottom;
 
 var flag = true;
 
 var year = 0;
 
-var t = d3.transition().duration(750);
+var t = d3.transition().duration(500);
 
 var g = d3.select("#chart-area").append("svg")
   .attr("width", width + margin.left + margin.right)
@@ -76,16 +76,6 @@ var yLabel = g.append("text")
 
 // Bind data
 d3.json("data/data.json").then(function(data){
-  dataset = data[year]['countries'];
-
-
-  // filter out null values from the array of countries for the selected year.
-  dataset = dataset.filter(function (el) {
-    return el.country != null && el.income != null && el.population != null;
-  });
-
-
-	console.log(dataset);
 
 
   // X Axis
@@ -100,50 +90,57 @@ d3.json("data/data.json").then(function(data){
     .tickFormat( function(d) { return d; });
   yAxisGroup.transition(t).call(yAxisCall);
 
+
   // Size of circle
   var size = d3.scaleLinear()
     .domain([0, d3.max(dataset, function(d) { return d.population; })])
     .range([5, 25]);
 
-
-  // bind data to circles for the selected year.
-  g.selectAll("circle")
-    .data(dataset)
-    .enter()
-    .append("circle")
-      .attr("fill", function(d) { return color(d.continent)})
-      .attr("cy", function(d) { return y(d.life_exp) })
-      .attr("cx", function(d) { return x(d.income / d.population) })
-      .attr("r", function(d) { return (Math.PI * Math.pow(size(d.population), 2)) });
-
-  /*
   d3.interval( function() {
     update(data);
     year += 1;
   }, 100);
-  */
 
   // run the vis for the first time
-  //update(data);
+  update(data);
 });
 
 
-function update(data) {
+function update(data, size) {
   // remove any country-year combos that have a null value for life expectancy, income, or population
+  dataset = data[year]['countries'];
 
-
-  // X Axis
-
-
-  // Y Axis
-
+  // filter out null values from the array of countries for the selected year.
+  dataset = dataset.filter(function (el) {
+    return el.country != null && el.income != null && el.population != null;
+  });
 
   // JOIN new data with old elements
+  // JOIN new data with old elements
+  var circles = g.selectAll("circle")
+    .data(dataset);
 
 
   // EXIT old elements not present in new data.
+  circles.exit()
+    .attr("fill", "red")
+  .transition(t)
+    .attr("cy", y(0))
+    .remove();
 
 
   // ENTER new elements present in new data.
+  circles.enter()
+    .append("circle")
+      .attr("fill", function(d) { return color(d.continent)})
+      .attr("cy", function(d) { return y(d.life_exp) })
+      .attr("cx", function(d) { return x(d.income) })
+      .attr("r", function(d) { return size(d.population) })
+      // AND UPDATE old elements present in new data.
+      .merge(circles)
+      .transition(t)
+        .attr("cy", function(d) { return y(d.life_exp) })
+        .attr("cx", function(d) { return x(d.income) })
+        .attr("r", function(d) { return size(d.population) });
 
 }
