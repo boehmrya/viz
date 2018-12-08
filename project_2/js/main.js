@@ -13,6 +13,8 @@ var flag = true;
 
 var year = 0;
 
+var yearText = year + 1800;
+
 var t = d3.transition().duration(500);
 
 var g = d3.select("#chart-area").append("svg")
@@ -78,24 +80,32 @@ d3.json("data/data.json").then(function(data){
     .tickFormat( function(d) { return d; });
   yAxisGroup.transition(t).call(yAxisCall);
 
-  /*
+  // Text for the year
+  g.append("text")
+    .attr("class", "year")
+    .attr("fill", "#aaa")
+    .attr("x", width - 100)
+    .attr("y", height - 30)
+    .attr("font-size", "40px")
+    .text(yearText.toString());
+
+  // continually run update function
   d3.interval( function() {
     update(data);
     year += 1;
+    yearText += 1;
   }, 100);
-  */
 
-  // run the vis for the first time
+  // run the viz for the first time
   update(data);
 });
 
 
 function update(data) {
-  // remove any country-year combos that have a null value for life expectancy, income, or population
+  // select all countries for the current year
   dataset = data[year]['countries'];
 
-
-  // filter out null values from the array of countries for the selected year.
+  // filter out any countries with any null values from the array for the selected year.
   dataset = dataset.filter(function (el) {
     return el.country != null && el.income != null && el.population != null & el.life_exp != null;
   });
@@ -106,9 +116,8 @@ function update(data) {
     .range([5, 25]);
 
   // JOIN new data with old elements
-  // JOIN new data with old elements
   var circles = g.selectAll("circle")
-    .data(dataset);
+    .data(dataset, function(d) { return d.country; }); //join);
 
   // EXIT old elements not present in new data.
   circles.exit().remove();
@@ -129,4 +138,8 @@ function update(data) {
       .text(function(d) {
         return d.country;
       });
+
+  // update the year
+  g.selectAll("text.year").text(yearText.toString());
+
 }
