@@ -106,6 +106,7 @@ function update(data) {
       return d.month;
     });
 
+
   // EXIT old elements not present in new data.
   circles.exit()
     .attr("fill", "red")
@@ -117,14 +118,14 @@ function update(data) {
   // ENTER new elements present in new data.
   circles.enter()
     .append("circle")
-      .attr("fill", "grey")
+      .attr("fill", function(d) { return color(d.continent)})
       .attr("cy", y(0))
-      .attr("cx", function(d) { return x(d.month) + x.bandwidth() / 2 })
+      .attr("cx", function(d) { return x(d.month) })
       .attr("r", 5)
       // AND UPDATE old elements present in new data.
       .merge(circles)
       .transition(t)
-        .attr("cx", function(d) { return x(d.month)  + x.bandwidth() / 2 })
+        .attr("cx", function(d) { return x(d.month) })
         .attr("cy", function(d) { return y(d[value]); })
 
   var label = flag ? "Revenue" : "Profit";
